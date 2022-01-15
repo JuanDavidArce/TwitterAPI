@@ -1,12 +1,13 @@
 # Python
-from typing import Optional,List
+import json
+from typing import Optional, List
 from uuid import UUID
 from datetime import date
 from datetime import datetime
 
 
 # Pydantic
-from  pydantic import BaseModel
+from pydantic import BaseModel
 from pydantic import EmailStr
 from pydantic import Field
 
@@ -14,6 +15,7 @@ from pydantic import Field
 # FastAPI
 from fastapi import FastAPI
 from fastapi import status
+from fastapi import Body
 
 
 app = FastAPI()
@@ -21,12 +23,12 @@ app = FastAPI()
 
 # Models
 class UserBase(BaseModel):
-    user_id:UUID=Field(...)
-    email:EmailStr=Field(...)
+    user_id: UUID = Field(...)
+    email: EmailStr = Field(...)
 
 
 class UserLogin(UserBase):
-    password:str = Field(
+    password: str = Field(
         ...,
         min_length=8,
         max_length=50
@@ -34,34 +36,34 @@ class UserLogin(UserBase):
 
 
 class User(UserBase):
-    first_name:str =Field(
+    first_name: str = Field(
         ...,
         min_length=1,
         max_length=50
     )
 
-    last_name:str =Field(
+    last_name: str = Field(
         ...,
         min_length=1,
         max_length=50
     )
-    birth_date:Optional[date]=Field(default=None)
+    birth_date: Optional[date] = Field(default=None)
 
 
 class Tweet(BaseModel):
-    tweet_id:UUID = Field(...)
+    tweet_id: UUID = Field(...)
     content: str = Field(
         ...,
         max_length=256,
         min_length=1,
-        )
+    )
     created_at: datetime = Field(default=datetime.now())
     updated_at: Optional[datetime] = Field(default=None)
     by: User = Field(...)
 
 
 class UserRegister(User):
-    password:str = Field(
+    password: str = Field(
         ...,
         min_length=8,
         max_length=50
@@ -71,9 +73,9 @@ class UserRegister(User):
 # Path Operations
 
 
-## Users
+# Users
 
-### Register a user
+# Register a user
 @app.post(
     path="/signup",
     response_model=User,
@@ -81,7 +83,7 @@ class UserRegister(User):
     summary="Register a User",
     tags=["Users"]
 )
-def signup():
+def signup(user: UserRegister = Body(...)):
     """
     Signup
 
@@ -89,19 +91,35 @@ def signup():
 
 
     Parameters:
+
         -Request body parameter
+
             - user : UserRegister
-    
+
     Returns a json with the basic user information:
+        
         - user_id : UUID
+        
         - email: Emailstr
+        
         - first_name : str
+        
         - last_name : str
-        - birth_date : str
+        
+        - birth_date : date
     """
+    with open("users.json", "r+", encoding="utf-8") as f:
+        results = json.loads(f.read())
+        user_dict = user.dict()
+        user_dict["user_id"] = str(user_dict["user_id"])
+        user_dict["birth_date"] = str(user_dict["birth_date"])
+        results.append(user_dict)
+        f.seek(0)
+        f.write(json.dumps (results))
+        return user
 
 
-### Login a user
+# Login a user
 @app.post(
     path="/login",
     response_model=User,
@@ -113,7 +131,7 @@ def login():
     pass
 
 
-### Show all users
+# Show all users
 @app.get(
     path="/users",
     response_model=List[User],
@@ -125,7 +143,7 @@ def show_all_users():
     pass
 
 
-### Show a user
+# Show a user
 @app.get(
     path="/users/{user_id}",
     response_model=User,
@@ -137,7 +155,7 @@ def show_a_user():
     pass
 
 
-### Delete a user
+# Delete a user
 @app.delete(
     path="/users/{user_id}/delete",
     response_model=User,
@@ -149,7 +167,7 @@ def delete_a_user():
     pass
 
 
-### Update a user
+# Update a user
 @app.put(
     path="/users/{user_id}/update",
     response_model=User,
@@ -161,22 +179,22 @@ def Update_a_user():
     pass
 
 
-## Tweets
+# Tweets
 
 
-### Show all tweets
+# Show all tweets
 @app.get(
     path="/",
     response_model=List[Tweet],
     status_code=status.HTTP_200_OK,
     summary="Show all tweets",
     tags=["Tweets"]
-    )
+)
 def home():
-    return {"twitter API":"Working"}
+    return {"twitter API": "Working"}
 
 
-### Post a tweet
+# Post a tweet
 @app.post(
     path="/post",
     response_model=Tweet,
@@ -188,7 +206,7 @@ def post():
     pass
 
 
-### Show a tweet
+# Show a tweet
 @app.get(
     path="/tweets/{tweet_id}",
     response_model=Tweet,
@@ -200,7 +218,7 @@ def show():
     pass
 
 
-### Delete a tweet
+# Delete a tweet
 @app.delete(
     path="/tweets/{tweet_id}/delete",
     response_model=Tweet,
@@ -212,7 +230,7 @@ def delete_a_tweet():
     pass
 
 
-### Update a tweet
+# Update a tweet
 @app.put(
     path="/tweets/{tweet_id}/update",
     response_model=Tweet,
