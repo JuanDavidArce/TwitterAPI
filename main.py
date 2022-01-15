@@ -98,15 +98,15 @@ def signup(user: UserRegister = Body(...)):
             - user : UserRegister
 
     Returns a json with the basic user information:
-        
+
         - user_id : UUID
-        
+
         - email: Emailstr
-        
+
         - first_name : str
-        
+
         - last_name : str
-        
+
         - birth_date : date
     """
     with open("users.json", "r+", encoding="utf-8") as f:
@@ -116,7 +116,7 @@ def signup(user: UserRegister = Body(...)):
         user_dict["birth_date"] = str(user_dict["birth_date"])
         results.append(user_dict)
         f.seek(0)
-        f.write(json.dumps (results))
+        f.write(json.dumps(results))
         return user
 
 
@@ -149,19 +149,19 @@ def show_all_users():
         -
 
     Returns a json list with all users in the app with the following keys:
-        
+
         - user_id : UUID
-        
+
         - email: Emailstr
-        
+
         - first_name : str
-        
+
         - last_name : str
-        
+
         - birth_date : date
     """
 
-    with open("users.json","r",encoding="utf-8") as f:
+    with open("users.json", "r", encoding="utf-8") as f:
         results = json.loads(f.read())
         return results
 
@@ -214,7 +214,29 @@ def Update_a_user():
     tags=["Tweets"]
 )
 def home():
-    return {"twitter API": "Working"}
+    """
+    This path operation shows all tweets in the app
+
+    Parameters:
+
+        -
+
+    Returns a json list with all tweets in the app with the following keys:
+
+        - tweet_id : UUID
+
+        - content: str
+
+        - created_at : datetime
+
+        - updated_at : Optional[datetime]
+
+        - by : User
+    """
+
+    with open("tweets.json","r",encoding="utf-8") as f:
+        results = json.loads(f.read())
+        return results
 
 
 # Post a tweet
